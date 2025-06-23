@@ -188,8 +188,8 @@
         }
 
         .header-svg {
-            width: 408px;
-            height: 148px;
+    width: 408px;
+    height: 148px;
             object-fit: contain;
             filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
             animation: float 3s ease-in-out infinite;
@@ -405,7 +405,7 @@
             animation: redWinPulse 2s ease-in-out;
         }
 
-
+ 
 
         /* Responsive Design */
         @media (max-width: 768px) {
@@ -560,8 +560,8 @@
 
             // مسارات الفيديو - ضع مسارات الفيديو الخاصة بك هنا
             const VIDEO_PATHS = {
-                red: "https://cdn.discordapp.com/attachments/1197970158694703105/1384296763523072175/3-Month.mp4?ex=6851ea53&is=685098d3&hm=bff9b1febd48758cb96c04f588a612a2a30092484272057137af08d412a1dbcf&",     // ضع مسار فيديو فوز الفريق الأحمر
-                blue: "https://cdn.discordapp.com/attachments/1197970158694703105/1384296762952515725/6-Month.mp4?ex=6851ea53&is=685098d3&hm=3a908dbd3ff06e3d28bbb83eb3f2a56f32ad56e1212fadce964c93365fe9baa3&"    // ضع مسار فيديو فوز الفريق الأزرق
+                red: "https://cdn.discordapp.com/attachments/1197970158694703105/1384296762952515725/6-Month.mp4?ex=685a7c13&is=68592a93&hm=df122b765ef62f4c3855cb23e14ecef013093cb03fcc7f7b764d3b2307f98904&",     // ضع مسار فيديو فوز الفريق الأحمر
+                blue: "https://cdn.discordapp.com/attachments/1197970158694703105/1384296762952515725/6-Month.mp4?ex=685a7c13&is=68592a93&hm=df122b765ef62f4c3855cb23e14ecef013093cb03fcc7f7b764d3b2307f98904&"    // ضع مسار فيديو فوز الفريق الأزرق
             };
 
             let lastStatus = null;
@@ -616,7 +616,46 @@
                 return data.data[0];
             }
 
-     
+        function playVictoryVideo(team) {
+                if (hasPlayedVictoryVideo) return; // منع تشغيل الفيديو أكثر من مرة
+                
+                const videoOverlay = document.getElementById('victoryVideoOverlay');
+                const videoElement = document.getElementById('victoryVideo');
+                const videoSource = videoElement.querySelector('source');
+                
+                // تحديد مسار الفيديو حسب الفريق الفائز
+                const videoPath = team === 'blue' ? VIDEO_PATHS.blue : VIDEO_PATHS.red;
+                
+                if (!videoPath) {
+                    console.warn(`لم يتم تحديد مسار فيديو للفريق: ${team}`);
+                    return;
+                }
+                
+                videoSource.src = videoPath;
+                videoElement.load();
+                
+                // عرض الفيديو بملء الشاشة
+                videoOverlay.classList.add('show');
+                hasPlayedVictoryVideo = true;
+                
+                // تشغيل الفيديو
+                videoElement.play().catch(e => {
+                    console.warn("فشل تشغيل فيديو الفوز:", e);
+                });
+                
+                // إخفاء الفيديو بعد انتهائه
+                videoElement.onended = function() {
+                    setTimeout(() => {
+                        videoOverlay.classList.remove('show');
+                    }, 1000); // انتظار ثانية واحدة بعد انتهاء الفيديو
+                };
+                
+                // إمكانية إغلاق الفيديو بالنقر
+                videoOverlay.onclick = function() {
+                    videoElement.pause();
+                    videoOverlay.classList.remove('show');
+                };
+            }
 
             async function updateUI(token, prediction) {
                 const progressBlue = document.querySelector('.progress-blue');
