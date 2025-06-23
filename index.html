@@ -565,7 +565,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const client_id = "o0mirs118m988mptky6cd384crdj9c";
-            const redirect_uri = "http://localhost:5502/";
+            const redirect_uri = "https://imminent-third-brian.glitch.me/";
             const broadcaster_login = "ultimatesrp";
 
             // مسارات الفيديو - ضع مسارات الفيديو الخاصة بك هنا
@@ -626,46 +626,7 @@
                 return data.data[0];
             }
 
-            function playVictoryVideo(team) {
-                if (hasPlayedVictoryVideo) return; // منع تشغيل الفيديو أكثر من مرة
-                
-                const videoOverlay = document.getElementById('victoryVideoOverlay');
-                const videoElement = document.getElementById('victoryVideo');
-                const videoSource = videoElement.querySelector('source');
-                
-                // تحديد مسار الفيديو حسب الفريق الفائز
-                const videoPath = team === 'blue' ? VIDEO_PATHS.blue : VIDEO_PATHS.red;
-                
-                if (!videoPath) {
-                    console.warn(`لم يتم تحديد مسار فيديو للفريق: ${team}`);
-                    return;
-                }
-                
-                videoSource.src = videoPath;
-                videoElement.load();
-                
-                // عرض الفيديو بملء الشاشة
-                videoOverlay.classList.add('show');
-                hasPlayedVictoryVideo = true;
-                
-                // تشغيل الفيديو
-                videoElement.play().catch(e => {
-                    console.warn("فشل تشغيل فيديو الفوز:", e);
-                });
-                
-                // إخفاء الفيديو بعد انتهائه
-                videoElement.onended = function() {
-                    setTimeout(() => {
-                        videoOverlay.classList.remove('show');
-                    }, 1000); // انتظار ثانية واحدة بعد انتهاء الفيديو
-                };
-                
-                // إمكانية إغلاق الفيديو بالنقر
-                videoOverlay.onclick = function() {
-                    videoElement.pause();
-                    videoOverlay.classList.remove('show');
-                };
-            }
+     
 
             async function updateUI(token, prediction) {
                 const progressBlue = document.querySelector('.progress-blue');
