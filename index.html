@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>50/50 Progress Layout</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        @font-face {
+            font-family: 'Arame';
+            src: url('https://raw.githack.com/IM07SA/Fonts-Custom-Chat-M7/main/Arame-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+        .title, 
+        .choices-titles,
+        .blue-title, 
+        .red-title, 
+        .score-labels, 
+        .progress-blue::after, 
+        .progress-red::after,
+        .mini-circle {
+            font-family: 'Arame', 'Arial', sans-serif;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: url('https://media.discordapp.net/attachments/1197970158694703105/1382490589135900712/BG.png?ex=684b5831&is=684a06b1&hm=10edbc405c724ef3875bfd1cb75aa3ab845a6495acb40e2948cd8f223a242100&=&format=webp&quality=lossless&width=605&height=340');
+            background-size: cover;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        .left-section {
+            width: 50%;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-end;
+            position: relative;
+        }
+
+        .right-section {
+            width: 50%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-end;
+            position: relative;
+        }
+
+        .percentage-text {
+            font-size: 8rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 255, 255, 0.3);
+            user-select: none;
+        }
+
+        .center-panel {
+            position: absolute;
+            top: 41%;
+            left: 50%;
+            transform: translate(-50%, 72%);
+            background: url(rezr1.png) center / cover no-repeat;
+            padding: 18px 37px;
+            width: 852px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .choices-titles {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .blue-title {
+            color: #3498db;
+            text-align: right;
+        }
+
+        .red-title {
+            color: #e74c3c;
+            text-align: left;
+        }
+
+        .stars-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            padding: 10px 30px;
+            border-radius: 50px;
+
+            z-index: 100;
+        }
+
+        .star {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+        .star img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgb(255, 0, 0));
+        }
+
+        .middle-stars {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 75px;
+        }
+
+        .animated-image {
+            width: 70px;
+            height: 70px;
+            position: relative;
+        }
+
+        .animated-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0.7;
+                transform: scale(0.9);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+        }
+
+        .star img {
+            animation: twinkle 2s ease-in-out infinite;
+        }
+
+        .star:nth-child(1) img {
+            animation-delay: 0.3s;
+        }
+        .star:nth-child(2) img {
+            animation-delay: 0.6s;
+        }
+        .star:nth-child(3) img {
+            animation-delay: 0.9s;
+        }
+
+        .svg-header {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+        }
+
+        .header-svg {
+    width: 408px;
+    height: 148px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .progress-blue::after {
+            color: #0049d0 !important;
+        }
+
+        .progress-red::after {
+            color: #ec3209 !important;
+        }
+
+        .center-panel:hover {
+            transform: translate(-50%, 72%);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.08), 0 4px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, 80%) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, 72%) scale(1);
+            }
+        }
+
+        .title {
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+
+        .progress-container {
+            width: 100%;
+        }
+
+        .team-circles-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 0 10px;
+        }
+
+        .left-circles,
+        .right-circles {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mini-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+        }
+
+        .mini-circle.blue {
+            background: #0891b2;
+        }
+
+        .mini-circle.red {
+            background: #dc2626;
+        }
+
+        .progress-bar {
+            height: 34px; 
+            border-radius: 3px;
+            overflow: hidden;
+            display: flex;
+            margin-bottom: 12px;
+        }
+
+        .progress-blue {
+            width: 50%;
+            background: url('blue.png') no-repeat left center;
+            background-size: cover;
+            transform: scaleY(-1);
+            transition: width 0.5s ease;
+        }
+
+        .progress-red {
+            width: 50%;
+            background: url('red.png') no-repeat right center;
+            background-size: cover;
+            transform: scaleY(-1);
+            transition: width 0.5s ease;
+        }
+
+        .progress-blue, .progress-red {
+            position: relative;
+            height: 100%;
+            transition: width 0.8s ease;
+            overflow: visible;
+        }
+
+        .progress-blue::after,
+        .progress-red::after {
+            content: attr(data-percent);
+            position: absolute;
+            top: 20%;
+            transform: translateY(-50%);
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            pointer-events: none;
+            transform: scaleY(-1);
+        }
+
+        .progress-blue::after {
+            left: 40%;
+        }
+
+        .progress-red::after {
+            right: 40%;
+            text-align: right;
+        }
+
+        .moving-dot {
+            position: absolute;
+            top: 50%;
+            right: -10px;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(-50%) scale(1); }
+            50% { transform: translateY(-55%) scale(1.2); }
+            100% { transform: translateY(-50%) scale(1); }
+        }
+
+        .score-labels {
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+            padding: 0 10px;
+        }
+
+        .mini-circle {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .mini-circle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .predictors {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        .predictor-img {
+            width: 36px;
+            height: 36px;
+            object-fit: cover;
+            border: 2px solid #7c7c7c;
+            clip-path: polygon(19% 0, 100% 0, 100% 30%, 100% 82%, 85% 100%, 0 100%, 0% 70%, 0 19%);
+        }
+
+        /* Victory Video Styles */
+        .victory-video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .victory-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .victory-video-overlay.show {
+            display: flex;
+        }
+
+        /* Win animations */
+        body.win-blue {
+            animation: blueWinPulse 2s ease-in-out;
+        }
+
+        body.win-red {
+            animation: redWinPulse 2s ease-in-out;
+        }
+
+ 
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .percentage-text {
+                font-size: 4rem;
+            }
+            
+            .center-panel {
+                width: 90%;
+                padding: 15px 20px;
+            }
+            
+            .title {
+                font-size: 1.2rem;
+            }
+            
+            .mini-circle {
+                width: 30px;
+                height: 30px;
+                font-size: 0.8rem;
+            }
+            
+            .progress-bar {
+                height: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .percentage-text {
+                font-size: 3rem;
+            }
+            
+            .center-panel {
+                width: 95%;
+                padding: 12px 15px;
+            }
+            
+            .title {
+                font-size: 1rem;
+            }
+            
+            .mini-circle {
+                width: 25px;
+                height: 25px;
+                font-size: 0.7rem;
+            }
+            
+            .progress-bar {
+                height: 18px;
+            }
+            
+            .score-labels {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Victory Video Overlay -->
+    <div class="victory-video-overlay" id="victoryVideoOverlay">
+<video class="victory-video" id="victoryVideo" autoplay >
+            <source src="" type="video/mp4">
+          <source src="" type="video/mp4">
+			<source src="" type="video/webm">
+            متصفحك لا يدعم تشغيل الفيديو.
+        </video>
+    </div>
+
+    <div class="container">
+        <div class="winner-announcement" id="winnerAnnouncement"></div>
+
+        <!-- Left Section (Blue) -->
+        <div class="left-section"></div>
+
+        <!-- Right Section (Red) -->
+        <div class="right-section"></div>
+
+        <!-- Center Panel -->
+        <div class="svg-header">
+            <img src="logovote.png" alt="زخرفة" class="header-svg">
+        </div>
+        <div class="center-panel">
+            <div class="title" id="predictionTitle">جارٍ تحميل التنبؤ...</div>
+            <div class="progress-container">
+                <div class="team-circles-top">
+                    <div class="left-circles">
+                        <div id="blueTop" class="top-predictors"></div>
+                    </div>
+                    <div class="right-circles">
+                        <div id="redTop" class="top-predictors"></div>
+                    </div>
+                </div>
+                <div class="choices-titles">
+                    <div class="blue-title" id="blueTitle">الخيار الأزرق</div>
+                    <div class="red-title" id="redTitle">الخيار الأحمر</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-blue" id="blueBar"></div>
+                    <div class="progress-red" id="redBar"></div>
+                </div>
+                
+                <div class="score-labels">
+                    <span class="score-left" id="blueStats">10026</span>
+                    <span class="score-right" id="redStats">10021</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stars-container">
+            <div class="middle-stars">
+                <div class="star">
+                    <img src="star.svg" alt="نجمة">
+                </div>
+                <div class="star">
+                    <img src="star.svg" alt="نجمة">
+                </div>
+                <div class="star">
+                    <img src="star.svg" alt="نجمة">
+                </div>
+                <div class="star">
+                    <img src="star.svg" alt="نجمة">
+                </div>
+                <div class="star">
+                    <img src="star.svg" alt="نجمة">
+                </div>
+                <div class="animated-image">
+                    <img src="logostar.png" alt="logo">
+                </div>
+                <div class="star">
+                    <img src="star.svg" alt="نجمة">
+                </div>
+                <div class="star">
+                    <img src="star.svg" alt="نجمة">
+                </div>
+                <div class="star">
+                    <img src="star.svg" alt="نجمة">
+                </div>
+                <div class="star">
+                    <img src="star.svg" alt="نجمة">
+                </div>
+                <div class="star">
+                    <img src="star.svg" alt="نجمة">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const client_id = "o0mirs118m988mptky6cd384crdj9c";
+            const redirect_uri = "https://imminent-third-brian.glitch.me/";
+            const broadcaster_login = "ultimatesrp";
+
+            // مسارات الفيديو - ضع مسارات الفيديو الخاصة بك هنا
+            const VIDEO_PATHS = {
+                red: "https://cdn.discordapp.com/attachments/1197970158694703105/1384296762952515725/6-Month.mp4?ex=685a7c13&is=68592a93&hm=df122b765ef62f4c3855cb23e14ecef013093cb03fcc7f7b764d3b2307f98904&",     // ضع مسار فيديو فوز الفريق الأحمر
+                blue: "https://cdn.discordapp.com/attachments/1197970158694703105/1384296762952515725/6-Month.mp4?ex=685a7c13&is=68592a93&hm=df122b765ef62f4c3855cb23e14ecef013093cb03fcc7f7b764d3b2307f98904&"    // ضع مسار فيديو فوز الفريق الأزرق
+            };
+
+            let lastStatus = null;
+            let lastWinningId = null;
+            let lastTotalBlue = null;
+            let lastTotalRed = null;
+            let hasPlayedVictoryVideo = false;
+
+            function getTokenFromUrl() {
+                const hash = window.location.hash;
+                if (hash.includes("access_token")) {
+                    const params = new URLSearchParams(hash.substring(1));
+                    const token = params.get("access_token");
+                    // window.history.replaceState({}, document.title, "/");
+                    return token;
+                }
+
+                const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}&response_type=token&scope=channel:read:predictions user:read:email`;
+                window.location = authUrl;
+            }
+
+            async function getBroadcasterId(token) {
+                const res = await fetch(`https://api.twitch.tv/helix/users?login=${broadcaster_login}`, {
+                    headers: {
+                        "Authorization": "Bearer " + token,
+                        "Client-Id": client_id
+                    }
+                });
+                const data = await res.json();
+                return data.data[0].id;
+            }
+
+            async function getPrediction(token, broadcaster_id) {
+                const res = await fetch(`https://api.twitch.tv/helix/predictions?broadcaster_id=${broadcaster_id}`, {
+                    headers: {
+                        "Authorization": "Bearer " + token,
+                        "Client-Id": client_id
+                    }
+                });
+                const data = await res.json();
+                return data.data[0];
+            }
+
+            async function getUserDetails(token, userId) {
+                const res = await fetch(`https://api.twitch.tv/helix/users?id=${userId}`, {
+                    headers: {
+                        "Authorization": "Bearer " + token,
+                        "Client-Id": client_id
+                    }
+                });
+                const data = await res.json();
+                return data.data[0];
+            }
+
+        function playVictoryVideo(team) {
+                if (hasPlayedVictoryVideo) return; // منع تشغيل الفيديو أكثر من مرة
+                
+                const videoOverlay = document.getElementById('victoryVideoOverlay');
+                const videoElement = document.getElementById('victoryVideo');
+                const videoSource = videoElement.querySelector('source');
+                
+                // تحديد مسار الفيديو حسب الفريق الفائز
+                const videoPath = team === 'blue' ? VIDEO_PATHS.blue : VIDEO_PATHS.red;
+                
+                if (!videoPath) {
+                    console.warn(`لم يتم تحديد مسار فيديو للفريق: ${team}`);
+                    return;
+                }
+                
+                videoSource.src = videoPath;
+                videoElement.load();
+                
+                // عرض الفيديو بملء الشاشة
+                videoOverlay.classList.add('show');
+                hasPlayedVictoryVideo = true;
+                
+                // تشغيل الفيديو
+                videoElement.play().catch(e => {
+                    console.warn("فشل تشغيل فيديو الفوز:", e);
+                });
+                
+                // إخفاء الفيديو بعد انتهائه
+                videoElement.onended = function() {
+                    setTimeout(() => {
+                        videoOverlay.classList.remove('show');
+                    }, 1000); // انتظار ثانية واحدة بعد انتهاء الفيديو
+                };
+                
+                // إمكانية إغلاق الفيديو بالنقر
+                videoOverlay.onclick = function() {
+                    videoElement.pause();
+                    videoOverlay.classList.remove('show');
+                };
+            }
+
+            async function updateUI(token, prediction) {
+                const progressBlue = document.querySelector('.progress-blue');
+                const progressRed = document.querySelector('.progress-red');
+
+                const totalBlue = prediction.outcomes[0].channel_points;
+                const totalRed = prediction.outcomes[1].channel_points;
+
+                // ما يحدث إلا إذا تغيرت البيانات فعلاً
+                if (
+                    totalBlue === lastTotalBlue &&
+                    totalRed === lastTotalRed &&
+                    prediction.status === lastStatus &&
+                    prediction.winning_outcome_id === lastWinningId
+                ) {
+                    return;
+                }
+
+                // خزّن القيم الحالية
+                lastTotalBlue = totalBlue;
+                lastTotalRed = totalRed;
+                lastStatus = prediction.status;
+                lastWinningId = prediction.winning_outcome_id;
+
+                const sum = totalBlue + totalRed;
+                const bluePercent = Math.round((totalBlue / sum) * 100);
+                const redPercent = 100 - bluePercent;
+
+                // تحديث الواجهة
+                progressBlue.style.width = bluePercent + '%';
+                progressRed.style.width = redPercent + '%';
+                progressBlue.setAttribute('data-percent', bluePercent + '%');
+                progressRed.setAttribute('data-percent', redPercent + '%');
+
+                document.getElementById("predictionTitle").innerText = prediction.title;
+                document.getElementById("blueStats").innerText = totalBlue.toLocaleString();
+                document.getElementById("redStats").innerText = totalRed.toLocaleString();
+                document.getElementById("blueTitle").innerText = prediction.outcomes[0].title;
+                document.getElementById("redTitle").innerText = prediction.outcomes[1].title;
+                
+                // صور المشتركين
+                for (const [idx, outcome] of prediction.outcomes.entries()) {
+                    const team = idx === 0 ? 'blue' : 'red';
+                    const container = document.getElementById(`${team}Top`);
+                    container.innerHTML = '';
+
+                    const predictors = Array.isArray(outcome.top_predictors) ? outcome.top_predictors : [];
+
+                    for (const p of predictors.slice(0, 3)) {
+                        const userId = p.user_id || p.user?.id;
+                        if (!userId) continue;
+
+                        let imgUrl = 'fallback-avatar.png';
+                        let displayName = p.user_name || p.user?.display_name || 'User';
+
+                        try {
+                            const userDetails = await getUserDetails(token, userId);
+                            imgUrl = userDetails.profile_image_url || imgUrl;
+                            displayName = userDetails.display_name || displayName;
+                        } catch (e) {
+                            console.warn("فشل في جلب بيانات المستخدم:", userId);
+                        }
+
+                        const img = document.createElement('img');
+                        img.src = imgUrl;
+                        img.alt = displayName;
+                        img.title = displayName;
+                        img.classList.add('predictor-img');
+                        container.appendChild(img);
+                    }
+                }
+
+                // إعلان الفريق الفائز + مؤثرات
+                const winnerEl = document.getElementById("winnerAnnouncement");
+                document.body.classList.remove("win-blue", "win-red");
+
+                if (prediction.status === "RESOLVED") {
+                    const winningOutcome = prediction.outcomes.find(o => o.id === prediction.winning_outcome_id);
+                    const winnerText = `🏆 انتهى التصويت! الفائز: ${winningOutcome.title}`;
+
+                    winnerEl.innerText = `🎉 ${winnerText} 🎉`;
+                    document.getElementById("predictionTitle").innerText = winnerText;
+
+                    // تحديد الفريق الفائز وتشغيل الفيديو المناسب
+                    let winningTeam = null;
+                    if (winningOutcome.title.includes("أزرق") || winningOutcome === prediction.outcomes[0]) {
+                        document.body.classList.add("win-blue");
+                        winningTeam = 'blue';
+                    } else if (winningOutcome.title.includes("أحمر") || winningOutcome === prediction.outcomes[1]) {
+                        document.body.classList.add("win-red");
+                        winningTeam = 'red';
+                    }
+
+                    // تشغيل فيديو الفوز
+                    if (winningTeam) {
+                        setTimeout(() => {
+                            playVictoryVideo(winningTeam);
+                        }, 1000); // انتظار ثانية واحدة قبل تشغيل الفيديو
+                    }
+
+                    const winSound = document.getElementById("winSound");
+                    try {
+                        winSound.currentTime = 0;
+                        winSound.play();
+                    } catch (e) {
+                        console.warn("فشل تشغيل صوت الفوز:", e);
+                    }
+
+                } else if (prediction.status === "CANCELED") {
+                    winnerEl.innerText = "❌ تم إلغاء التنبؤ.";
+                    document.getElementById("predictionTitle").innerText = "❌ تم إلغاء التنبؤ.";
+                    hasPlayedVictoryVideo = false; // إعادة تعيين حالة الفيديو
+                } else {
+                    winnerEl.innerText = "";
+                    hasPlayedVictoryVideo = false; // إعادة تعيين حالة الفيديو للتنبؤات الجديدة
+                }
+            }
+
+            // تشغيل السكربت
+            (async () => {
+                const token = getTokenFromUrl();
+                if (!token) return;
+
+                try {
+                    const broadcaster_id = await getBroadcasterId(token);
+                    const prediction = await getPrediction(token, broadcaster_id);
+                    await updateUI(token, prediction);
+
+                    setInterval(async () => {
+                        try {
+                            const newPrediction = await getPrediction(token, broadcaster_id);
+                            await updateUI(token, newPrediction);
+                        } catch {
+                            document.getElementById("predictionTitle").innerText = "لا يوجد تنبؤ حالياً.";
+                        }
+                    }, 5000);
+                } catch (e) {
+                    document.getElementById("predictionTitle").innerText = "فشل في التحميل.";
+                    console.error(e);
+                }
+            })();
+        });
+    </script>
+</body>
+</html>
