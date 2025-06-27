@@ -735,9 +735,12 @@
 
                 if (prediction.status === "RESOLVED") {
                     const winningOutcome = prediction.outcomes.find(o => o.id === prediction.winning_outcome_id);
-                    const winnerText = `🏆 انتهى التصويت! الفائز: ${winningOutcome.title}`;
+                    // const winnerText = `🏆 انتهى التصويت! الفائز: ${winningOutcome.title}`;
 
-                    winnerEl.innerText = `🎉 ${winnerText} 🎉`;
+                    // winnerEl.innerText = `🎉 ${winnerText} 🎉`;
+			      // const winnerText = `🏆 انتهى التصويت! الفائز: ${winningOutcome.title}`;
+
+         //            winnerEl.innerText = `🎉 ${winnerText} 🎉`;
                     document.getElementById("predictionTitle").innerText = winnerText;
 
                     // تحديد الفريق الفائز وتشغيل الفيديو المناسب
