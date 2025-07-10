@@ -460,23 +460,6 @@
                 font-size: 0.9rem;
             }
         }
-	    /* Hide elements during video playback */
-body.video-playing .stars-container,
-body.video-playing .center-panel,
-body.video-playing .svg-header,
-body.video-playing .left-section,
-body.video-playing .right-section {
-    display: none !important;
-}
-
-/* Show only when there's a new prediction */
-body.new-prediction .stars-container,
-body.new-prediction .center-panel,
-body.new-prediction .svg-header,
-body.new-prediction .left-section,
-body.new-prediction .right-section {
-    display: flex !important;
-}
     </style>
 </head>
 <body>
@@ -634,51 +617,48 @@ body.new-prediction .right-section {
                 return data.data[0];
             }
 
-function playVictoryVideo(team) {
-    if (hasPlayedVictoryVideo) return;
-    
-    // إخفاء كل العناصر
-    document.body.classList.add('video-playing');
-    document.body.classList.remove('new-prediction');
-    
-    const videoOverlay = document.getElementById('victoryVideoOverlay');
-    const videoElement = document.getElementById('victoryVideo');
-    const videoSource = videoElement.querySelector('source');
-    
-    const videoPath = team === 'blue' ? VIDEO_PATHS.blue : VIDEO_PATHS.red;
-    
-    if (!videoPath) {
-        console.warn(`لم يتم تحديد مسار فيديو للفريق: ${team}`);
-        return;
-    }
-    
-    videoSource.src = videoPath;
-    videoElement.load();
-    videoOverlay.classList.add('show');
-    hasPlayedVictoryVideo = true;
-    
-    videoElement.play().catch(e => {
-        console.warn("فشل تشغيل فيديو الفوز:", e);
-    });
-    
-    videoElement.onended = function() {
-        setTimeout(() => {
-            videoOverlay.classList.remove('show');
-            // لا تعرض العناصر بعد انتهاء الفيديو
-        }, 1000);
-    };
-    
-    videoOverlay.onclick = function() {
-        videoElement.pause();
-        videoOverlay.classList.remove('show');
-    };
-}
+        function playVictoryVideo(team) {
+                if (hasPlayedVictoryVideo) return; // منع تشغيل الفيديو أكثر من مرة
+                
+                const videoOverlay = document.getElementById('victoryVideoOverlay');
+                const videoElement = document.getElementById('victoryVideo');
+                const videoSource = videoElement.querySelector('source');
+                
+                // تحديد مسار الفيديو حسب الفريق الفائز
+                const videoPath = team === 'blue' ? VIDEO_PATHS.blue : VIDEO_PATHS.red;
+                
+                if (!videoPath) {
+                    console.warn(`لم يتم تحديد مسار فيديو للفريق: ${team}`);
+                    return;
+                }
+                
+                videoSource.src = videoPath;
+                videoElement.load();
+                
+                // عرض الفيديو بملء الشاشة
+                videoOverlay.classList.add('show');
+                hasPlayedVictoryVideo = true;
+                
+                // تشغيل الفيديو
+                videoElement.play().catch(e => {
+                    console.warn("فشل تشغيل فيديو الفوز:", e);
+                });
+                
+                // إخفاء الفيديو بعد انتهائه
+                videoElement.onended = function() {
+                    setTimeout(() => {
+                        videoOverlay.classList.remove('show');
+                    }, 1000); // انتظار ثانية واحدة بعد انتهاء الفيديو
+                };
+                
+                // إمكانية إغلاق الفيديو بالنقر
+                videoOverlay.onclick = function() {
+                    videoElement.pause();
+                    videoOverlay.classList.remove('show');
+                };
+            }
+
             async function updateUI(token, prediction) {
-		       if (prediction && !hasPlayedVictoryVideo) {
-        document.body.classList.add('new-prediction');
-        document.body.classList.remove('video-playing');
-    }
-		    
                 const progressBlue = document.querySelector('.progress-blue');
                 const progressRed = document.querySelector('.progress-red');
 
@@ -788,21 +768,14 @@ function playVictoryVideo(team) {
                         console.warn("فشل تشغيل صوت الفوز:", e);
                     }
 
-               } else if (prediction.status === "CANCELED") {
-    winnerEl.innerText = "❌ تم إلغاء التنبؤ.";
-    document.getElementById("predictionTitle").innerText = "❌ تم إلغاء التنبؤ.";
-    hasPlayedVictoryVideo = false;
-    document.body.classList.add('new-prediction');
-    document.body.classList.remove('video-playing');
-} else if (prediction.status === "ACTIVE") {
-    // إذا كان هناك تنبؤ نشط جديد
-    hasPlayedVictoryVideo = false;
-    document.body.classList.add('new-prediction');
-    document.body.classList.remove('video-playing');
-} else {
-    winnerEl.innerText = "";
-    hasPlayedVictoryVideo = false;
-}
+                } else if (prediction.status === "CANCELED") {
+                    winnerEl.innerText = "❌ تم إلغاء التنبؤ.";
+                    document.getElementById("predictionTitle").innerText = "❌ تم إلغاء التنبؤ.";
+                    hasPlayedVictoryVideo = false; // إعادة تعيين حالة الفيديو
+                } else {
+                    winnerEl.innerText = "";
+                    hasPlayedVictoryVideo = false; // إعادة تعيين حالة الفيديو للتنبؤات الجديدة
+                }
             }
 
             // تشغيل السكربت
