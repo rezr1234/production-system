@@ -33,6 +33,9 @@
             background: url('https://media.discordapp.net/attachments/1197970158694703105/1382490589135900712/BG.png?ex=684b5831&is=684a06b1&hm=10edbc405c724ef3875bfd1cb75aa3ab845a6495acb40e2948cd8f223a242100&=&format=webp&quality=lossless&width=605&height=340');
             background-size: cover;
         }
+.hidden-during-video {
+    display: none !important;
+}
 
         .container {
             display: flex;
@@ -617,46 +620,40 @@
                 return data.data[0];
             }
 
-        function playVictoryVideo(team) {
-                if (hasPlayedVictoryVideo) return; // منع تشغيل الفيديو أكثر من مرة
-                
-                const videoOverlay = document.getElementById('victoryVideoOverlay');
-                const videoElement = document.getElementById('victoryVideo');
-                const videoSource = videoElement.querySelector('source');
-                
-                // تحديد مسار الفيديو حسب الفريق الفائز
-                const videoPath = team === 'blue' ? VIDEO_PATHS.blue : VIDEO_PATHS.red;
-                
-                if (!videoPath) {
-                    console.warn(`لم يتم تحديد مسار فيديو للفريق: ${team}`);
-                    return;
-                }
-                
-                videoSource.src = videoPath;
-                videoElement.load();
-                
-                // عرض الفيديو بملء الشاشة
-                videoOverlay.classList.add('show');
-                hasPlayedVictoryVideo = true;
-                
-                // تشغيل الفيديو
-                videoElement.play().catch(e => {
-                    console.warn("فشل تشغيل فيديو الفوز:", e);
-                });
-                
-                // إخفاء الفيديو بعد انتهائه
-                videoElement.onended = function() {
-                    setTimeout(() => {
-                        videoOverlay.classList.remove('show');
-                    }, 1000); // انتظار ثانية واحدة بعد انتهاء الفيديو
-                };
-                
-                // إمكانية إغلاق الفيديو بالنقر
-                videoOverlay.onclick = function() {
-                    videoElement.pause();
-                    videoOverlay.classList.remove('show');
-                };
-            }
+      function playVictoryVideo(team) {
+    if (hasPlayedVictoryVideo) return;
+
+    const videoOverlay = document.getElementById('victoryVideoOverlay');
+    const videoElement = document.getElementById('victoryVideo');
+    const videoSource = videoElement.querySelector('source');
+
+    // ✅ إخفاء كل العناصر أثناء عرض الفيديو
+    document.querySelectorAll('.container, .svg-header, .stars-container')
+        .forEach(el => el.classList.add('hidden-during-video'));
+
+    const videoPath = team === 'blue' ? VIDEO_PATHS.blue : VIDEO_PATHS.red;
+    if (!videoPath) return;
+
+    videoSource.src = videoPath;
+    videoElement.load();
+    videoOverlay.classList.add('show');
+    hasPlayedVictoryVideo = true;
+
+    videoElement.play().catch(e => console.warn("فشل تشغيل فيديو الفوز:", e));
+
+    videoElement.onended = function () {
+        setTimeout(() => {
+            videoOverlay.classList.remove('show');
+            // 👇 ننتظر التحديث الجاي للتنبؤ، ما نظهر أي شيء هنا
+        }, 1000);
+    };
+
+    videoOverlay.onclick = function () {
+        videoElement.pause();
+        videoOverlay.classList.remove('show');
+    };
+}
+
 
             async function updateUI(token, prediction) {
                 const progressBlue = document.querySelector('.progress-blue');
@@ -664,6 +661,11 @@
 
                 const totalBlue = prediction.outcomes[0].channel_points;
                 const totalRed = prediction.outcomes[1].channel_points;
+// ✅ إذا التنبؤ مو منتهي، نظهر العناصر من جديد
+if (prediction.status !== "RESOLVED") {
+    document.querySelectorAll('.container, .svg-header, .stars-container')
+        .forEach(el => el.classList.remove('hidden-during-video'));
+}
 
                 // ما يحدث إلا إذا تغيرت البيانات فعلاً
                 if (
